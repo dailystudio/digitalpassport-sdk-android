@@ -1,0 +1,27 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.dailystudio.passport.sdk" >
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application>
+
+        <activity android:name=".AuthManagementActivity"
+            android:exported="false"
+            android:theme="@style/Translucent"
+            android:launchMode="singleTask"/>
+
+        <activity
+            android:name=".AuthenticationActivity"
+            android:theme="@style/Translucent">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:host="${applicationId}" android:scheme="auth"/>
+            </intent-filter>
+
+        </activity>
+
+    </application>
+</manifest>
