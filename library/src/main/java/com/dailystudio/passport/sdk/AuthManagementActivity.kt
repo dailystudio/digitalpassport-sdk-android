@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.lifecycle.lifecycleScope
 import com.dailystudio.devbricksx.development.Logger
+import com.rasalexman.kdispatcher.KDispatcher
+import com.rasalexman.kdispatcher.call
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -37,7 +39,10 @@ class AuthManagementActivity : AppCompatActivity() {
         }
 
         fun createBaseIntent(context: Context): Intent {
-            return Intent(context, AuthManagementActivity::class.java)
+            return Intent(context, AuthManagementActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            }
         }
 
     }
@@ -57,26 +62,39 @@ class AuthManagementActivity : AppCompatActivity() {
 
         when (authState) {
             AuthState.None -> {
-                startAuth(intent)
                 authState = AuthState.Authentication
+                startAuth(intent)
             }
 
             AuthState.Authentication -> {
                 val code = intent?.data?.getQueryParameter("code")
                 Logger.debug("code: $code")
 
-                code?.let {
+                if (code != null) {
                     lifecycleScope.launch(Dispatchers.IO) {
-                        val accessToken = PassportAuthApi().accessToken(this@AuthManagementActivity,
-                            it,
-                            PassportAuthInterface.GRANT_TYPE_CODE,
-                            null
-                        )
-                        Logger.debug("accessToken: $accessToken")
+                        authState = AuthState.Token
+                        val authInfo = getAccessToken(code)
+                        authInfo?.accessToken?.let {
+                            val user = getUser(it)
+
+                            authSuccess()
+                        }
                     }
+                } else {
+                    authFailed()
                 }
             }
         }
+    }
+
+    private fun authSuccess() {
+        KDispatcher.call(SdkConstants.SUB_AUTH, true)
+        finish()
+    }
+
+    private fun authFailed() {
+        KDispatcher.call(SdkConstants.SUB_AUTH, false)
+        finish()
     }
 
     private fun startAuth(intent: Intent) {
@@ -84,13 +102,46 @@ class AuthManagementActivity : AppCompatActivity() {
         val redirectUri = intent.getStringExtra(SdkConstants.EXTRA_REDIRECT_URI)
         val region = intent.getStringExtra(SdkConstants.EXTRA_REGION) ?: ""
 
-        Logger.debug("clientId = $clientId, redirect = $redirectUri, region = $region")
+        val uri = PassportInterface.buildAuthUri(clientId, redirectUri, region)
+
+        Logger.debug("clientId = $clientId, redirect = $redirectUri, region = $region -> uri = $uri")
 
         val builder = CustomTabsIntent.Builder()
 
         val customTabsIntent = builder.build()
-        customTabsIntent.launchUrl(this,
-            PassportAuthInterface.buildAuthUri(clientId, redirectUri, region))
+        customTabsIntent.launchUrl(this, uri)
+    }
+
+    private suspend fun getAccessToken(code: String): AuthInfo? {
+        val tokenRet = PassportAuthApi().accessToken(this@AuthManagementActivity,
+            code,
+            PassportInterface.GRANT_TYPE_CODE,
+            null
+        )
+
+        return if (tokenRet != null) {
+            tokenRet.toAuthInfo()?.also {
+                AuthInfoHelper.saveAuthInfo(
+                    this@AuthManagementActivity, it)
+            }
+        } else {
+            null
+        }
+    }
+
+    private suspend fun getUser(accessToken: String): UserProfile? {
+        val userRet = PassportUserApi(accessToken).getUserProfile(
+            null
+        )
+
+        return if (userRet != null) {
+            userRet.toUser()?.also {
+                AuthInfoHelper.saveUserProfile(
+                    this@AuthManagementActivity, it)
+            }
+        } else {
+            null
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

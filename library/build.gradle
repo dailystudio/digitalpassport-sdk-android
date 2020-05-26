@@ -32,8 +32,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
+    implementation "com.dailystudio:devbricksx:${project.ext.devbricksxVersion}"
+
     implementation "com.squareup.retrofit2:retrofit:${project.ext.retrofitVersion}"
     implementation "com.squareup.retrofit2:converter-gson:${project.ext.retrofitVersion}"
-    implementation "com.dailystudio:devbricksx:${project.ext.devbricksxVersion}"
     implementation "androidx.browser:browser:1.2.0"
+    implementation "androidx.security:security-crypto:1.0.0-rc02"
+    implementation 'com.rasalexman.kdispatcher:kdispatcher:1.1.3'
 }
