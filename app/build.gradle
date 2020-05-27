@@ -4,14 +4,16 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion COMPILE_SDK
+    buildToolsVersion BUILD_TOOLS
 
     defaultConfig {
         applicationId "com.dailystudio.passport.sample"
         minSdkVersion 26
         targetSdkVersion 29
-        versionCode Integer.parseInt(appVersionCode)
-        versionName appVersion
+        versionCode VERSION_CODE
+        versionName VERSION_NAME
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -84,16 +86,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     implementation "com.facebook.stetho:stetho:${project.ext.stethoVersion}"
-    implementation "org.greenrobot:eventbus:${project.ext.eventBusVersion}"
-    implementation "com.nostra13.universalimageloader:universal-image-loader:${project.ext.imageLoaderVersion}"
-    implementation "com.squareup.retrofit2:retrofit:${project.ext.retrofitVersion}"
-    implementation "com.squareup.retrofit2:converter-gson:${project.ext.retrofitVersion}"
 
     implementation project(":library")
-
-    implementation "com.dailystudio:devbricksx:${project.ext.devbricksxVersion}"
-    implementation "com.dailystudio:devbricksx-java-annotations:${project.ext.devbricksxVersion}"
-    implementation "com.dailystudio:devbricksx-kotlin-annotations:${project.ext.devbricksxVersion}"
-    kapt "com.dailystudio:devbricksx-java-compiler:${project.ext.devbricksxVersion}"
-    kapt "com.dailystudio:devbricksx-kotlin-compiler:${project.ext.devbricksxVersion}"
 }
