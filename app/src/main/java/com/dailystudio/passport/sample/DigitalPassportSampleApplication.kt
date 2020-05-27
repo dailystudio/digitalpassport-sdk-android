@@ -14,13 +14,6 @@ class DigitalPassportSampleApplication : DevBricksApplication() {
         if (BuildConfig.USE_STETHO) {
             Stetho.initializeWithDefaults(this)
         }
-
-        val config = ImageLoaderConfiguration.Builder(this).build()
-
-        ImageLoader.getInstance().init(config)
-
-        Logger.info("application is running in %s mode.",
-            if (BuildConfig.DEBUG) "DEBUG" else "RELEASE")
     }
 
     override fun isDebugBuild(): Boolean {

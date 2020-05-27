@@ -82,8 +82,9 @@ class PassportSdk(val clientId: String,
         }
     }
 
-    fun signIn(context: Context, callback: AuthCallback?) {
+    fun signIn(context: Context, callback: AuthCallback? = null) {
         if (callback != null) {
+            Logger.debug("class: ${callback::class}");
             registerCallback(callback)
         }
 
@@ -95,6 +96,11 @@ class PassportSdk(val clientId: String,
         )
 
         ActivityLauncher.launchActivity(context, intent)
+    }
+
+    fun signOut(context: Context) {
+        AuthInfoHelper.clearUserProfile(context)
+        AuthInfoHelper.clearAuthInfo(context)
     }
 
     fun currentUser(context: Context): UserProfile? {

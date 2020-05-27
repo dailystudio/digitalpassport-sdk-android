@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name_release">DigitalPassport-Sample</string>
     <string name="app_name_debug">DigitalPassport-Sample (Debug)</string>
+
+    <string name="label_sign_in">Login</string>
+    <string name="label_sign_out">Logout</string>
+
 </resources>

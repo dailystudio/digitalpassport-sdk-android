@@ -51,6 +51,16 @@ object AuthInfoHelper {
         return AuthInfo(accessToken, refreshToken, expiresIn)
     }
 
+    fun clearAuthInfo(context: Context) {
+        val preferences = getEncryptedSharedPreferences(context)
+
+        preferences.edit().apply {
+            putString(SdkConstants.PREF_KEY_ACCESS_TOKEN, null)
+            putString(SdkConstants.PREF_KEY_REFRESH_TOKEN, null)
+            putLong(SdkConstants.PREF_KEY_EXPIRES_IN, 0)
+        }.apply()
+    }
+
     fun saveUserProfile(context: Context,
                         profile: UserProfile?) {
         if (profile == null) {
@@ -75,6 +85,14 @@ object AuthInfoHelper {
             Logger.warn("failed to parse user profile from [$userString]: $e")
             null
         }
+    }
+
+    fun clearUserProfile(context: Context) {
+        val preferences = getEncryptedSharedPreferences(context)
+
+        preferences.edit().apply {
+            putString(SdkConstants.PREF_USER, null)
+        }.apply()
     }
 
 }
