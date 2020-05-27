@@ -3,6 +3,7 @@ package com.dailystudio.passport.sdk
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.lifecycle.lifecycleScope
@@ -17,7 +18,9 @@ enum class AuthState {
     None,
     Authentication,
     Token,
+    Profile,
     Done,
+    Error,
 
 }
 
@@ -48,6 +51,20 @@ class AuthManagementActivity : AppCompatActivity() {
     }
 
     private var authState: AuthState = AuthState.None
+    private var authStateView: TextView? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContentView(R.layout.auth_management)
+
+        setupViews()
+    }
+
+    private fun setupViews() {
+        authStateView = findViewById(R.id.auth_state_prompt)
+        setAuthState(AuthState.None)
+    }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
@@ -55,14 +72,13 @@ class AuthManagementActivity : AppCompatActivity() {
         setIntent(intent)
     }
 
-
     override fun onResume() {
         super.onResume()
         Logger.debug("auth state: $authState")
 
         when (authState) {
             AuthState.None -> {
-                authState = AuthState.Authentication
+                setAuthState(AuthState.Authentication)
                 startAuth(intent)
             }
 
@@ -72,12 +88,20 @@ class AuthManagementActivity : AppCompatActivity() {
 
                 if (code != null) {
                     lifecycleScope.launch(Dispatchers.IO) {
-                        authState = AuthState.Token
+                        setAuthState(AuthState.Token)
+
                         val authInfo = getAccessToken(code)
                         authInfo?.accessToken?.let {
+                            setAuthState(AuthState.Profile)
                             val user = getUser(it)
 
-                            authSuccess()
+                            if (user != null) {
+                                setAuthState(AuthState.Done)
+                                authSuccess()
+                            } else {
+                                setAuthState(AuthState.Error)
+                                authFailed()
+                            }
                         }
                     }
                 } else {
@@ -85,6 +109,18 @@ class AuthManagementActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun setAuthState(newState: AuthState) {
+        this.authState = newState
+
+        authStateView?.setText(when(authState) {
+            AuthState.None, AuthState.Authentication -> R.string.auth_state_authentication
+            AuthState.Token -> R.string.auth_state_access_token
+            AuthState.Profile -> R.string.auth_state_profile
+            AuthState.Done -> R.string.auth_state_done
+            AuthState.Error -> R.string.auth_state_error
+        })
     }
 
     private fun authSuccess() {

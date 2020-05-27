@@ -1,0 +1,7 @@
+<resources>
+    <string name="auth_state_authentication">Authenticating ...</string>
+    <string name="auth_state_access_token">Getting access token ...</string>
+    <string name="auth_state_profile">Retrieving user profile ...</string>
+    <string name="auth_state_done">Everything is done. Enjoy</string>
+    <string name="auth_state_error">Something is wrong. Try it later.</string>
+</resources>
